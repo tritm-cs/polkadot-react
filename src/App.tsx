@@ -28,17 +28,8 @@ function App() {
   const [selectAccount, setSelectAccount] = useState<InjectedAccountWithMeta>();
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState(false);
-  const [lstKeyring, setLstKeyring] = useState();
 
   const setup = async () => {
-    // const provider = new WsProvider(RPC_ENDPOINT);
-    // const apiPromise = await ApiPromise.create({
-    //   provider, types: {
-    //     [KEY_PRE_SIGNED_MINT]: TYPE_PRE_SIGNED_MINT
-    //   }
-    // });
-    // await apiPromise?.isReady;
-    // setApi(apiPromise);
 
     const apiManager = await ApiManager.create({ wsEndpoint: RPC_ENDPOINT });
     const nftApiInit = new NFT(apiManager);
@@ -48,7 +39,6 @@ function App() {
     }
     apiManager.api.registerTypes(types);
     setApi(apiManager.api);
-    // setApi(apiPromise);
     setNftApi(nftApiInit);
   }
 
@@ -60,7 +50,6 @@ function App() {
     }
 
     const allAccounts = await web3Accounts();
-    // const data = await web3Accounts();
     setAccounts(allAccounts);
     if (allAccounts.length > 0) {
       const allAccountsKeyring = allAccounts.map(({ address, meta }) => ({
@@ -102,16 +91,6 @@ function App() {
     const royalty = 1;
     const limit = 100;
 
-    // Using with polkadot
-    // const injector = await web3FromAddress(selectAccount.address);
-    // const tx = api.tx.nft.createClass(metadata, null, collectionId, 0, 0, royalty, limit);
-
-    // await tx.signAndSend(selectAccount.address, { signer: injector.signer }, (data) => {
-    //   showResultTransaction('MintCollection', api, data);
-    // }).catch((err) => {
-    //   console.log(err);
-    // });
-
     // Using with sdk-nft from metaverse-network
     const accountPair = keyring.getPair(selectAccount.address);
     console.log(accountPair);
@@ -144,15 +123,12 @@ function App() {
     const nftStruct = api.createType(KEY_PRE_SIGNED_MINT, nft);
     const serializedStruct = nftStruct.toU8a();
 
-    // const accountPair = keyring.getPair(selectAccount.address);
-    // const injector = await web3FromSource(selectAccount.meta.source);
     const injector = await web3FromAddress(selectAccount.address);
     const signRaw = injector?.signer?.signRaw;
     if (signRaw) {
       const { signature } = await signRaw({
         address: selectAccount.address,
         data: u8aToHex(serializedStruct),
-        // data: stringToHex(JSON.stringify(nft)),
         type: 'bytes'
       });
 
@@ -161,24 +137,6 @@ function App() {
       console.log(signature);
     }
   }
-
-
-  //     const injector = await web3FromSource(targetDotAddress.meta.source)
-  //       const signRaw = injector?.signer?.signRaw
-  //       const { signature } = await signRaw({
-  //         address: targetDotAddress.address,
-  //         data: stringToHex('I\'m verifying my DOT address'),
-  //         type: 'bytes'
-  //  })
-
-  //   const accountPair = keyring.getPair(selectAccount.address);
-
-  //   const nftStruct = api.createType(KEY_PRE_SIGNED_MINT, nft);
-  //   const serializedStruct = nftStruct.toU8a();
-
-  //   const signature = accountPair.sign(serializedStruct, { withType: true });
-  //   console.log(u8aToHex(signature));
-  // }
 
   const mintPreSigned = async () => {
     if (!api) return;
@@ -193,12 +151,6 @@ function App() {
     }
     const preSignature = "0x9815cd3c135dc3b2aebf9bfa18d6b7ac94c3ee309e440b4bdba6ef47aa3fef75207723a943647673fce4bbb666a945eda3fe0b7c3ee1089d83098f8505161f89";
     const signerAddress = "5G1d2aQY8GkoDLevESg6CsJVxgrEoLHSJ9tGGFYVH4reWTBo";
-    // const injector = await web3FromAddress(selectAccount.address);
-    // const tx = api.tx.nft.mintPreSigned(nft, hexToU8a(preSignature), signerAddress);
-    // // const tx = api.tx.nft.mintPreSigned(nft, preSignature, signerAddress);
-    // await tx.signAndSend(selectAccount.address, { signer: injector.signer }, (data) => {
-    //   showResultTransaction("MintPreSign", api, data);
-    // });
 
     const accountPair = keyring.getPair(selectAccount.address);
     const result = await nftApi?.mintPresignedNFT(
